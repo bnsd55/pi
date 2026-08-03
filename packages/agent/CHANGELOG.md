@@ -10,6 +10,7 @@
 ### Added
 
 - Added bounded `Session.findEntriesOnBranch()` and `findEntryOnBranch()` queries with explicit traversal, filtering, ordering, and limit options.
+- Added an experimental JSONL v4 session backend with mutation replay, shared sequence restoration, and torn-tail recovery.
 
 ## [0.83.0] - 2026-07-29
 
