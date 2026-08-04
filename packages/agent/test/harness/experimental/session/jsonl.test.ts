@@ -2,7 +2,7 @@ import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { JsonlSessionRepository } from "../../../../src/experimental.ts";
+import { JsonlSessionRepo } from "../../../../src/experimental.ts";
 import { NodeExecutionEnv } from "../../../../src/harness/env/nodejs.ts";
 import {
 	createSessionBackendConformance,
@@ -18,8 +18,8 @@ function createTempDir(): string {
 	return directory;
 }
 
-function createRepository(root: string): JsonlSessionRepository {
-	return new JsonlSessionRepository({
+function createRepository(root: string): JsonlSessionRepo {
+	return new JsonlSessionRepo({
 		fs: new NodeExecutionEnv({ cwd: root }),
 		sessionsRoot: root,
 		cwd: root,
@@ -38,7 +38,7 @@ const conformance = createSessionBackendConformance(async () => {
 	} satisfies SessionBackendFixture;
 });
 
-describe("JsonlSessionRepository conformance", () => {
+describe("JsonlSessionRepo conformance", () => {
 	for (const group of new Set(conformance.map((testCase) => testCase.group))) {
 		describe(group, () => {
 			for (const testCase of conformance.filter((candidate) => candidate.group === group)) {
@@ -176,7 +176,7 @@ describe("JSONL v4 persistence", () => {
 				return typeof value === "function" ? value.bind(target) : value;
 			},
 		});
-		await using failingRepository = new JsonlSessionRepository({
+		await using failingRepository = new JsonlSessionRepo({
 			fs: failingFs,
 			sessionsRoot: root,
 			cwd: root,
