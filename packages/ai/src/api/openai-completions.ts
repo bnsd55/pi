@@ -160,12 +160,17 @@ interface OpenAICompatCacheControl {
 
 type ResolvedOpenAICompletionsCompat = Omit<
 	Required<OpenAICompletionsCompat>,
-	"cacheControlFormat" | "deferredToolsMode" | "supportsThinkingTokenBudget" | "thinkingTokenBudgetField"
+	| "cacheControlFormat"
+	| "deferredToolsMode"
+	| "supportsThinkingTokenBudget"
+	| "thinkingTokenBudgetField"
+	| "reasoningReplayField"
 > & {
 	cacheControlFormat?: OpenAICompletionsCompat["cacheControlFormat"];
 	deferredToolsMode?: OpenAICompletionsCompat["deferredToolsMode"];
 	supportsThinkingTokenBudget?: OpenAICompletionsCompat["supportsThinkingTokenBudget"];
 	thinkingTokenBudgetField?: OpenAICompletionsCompat["thinkingTokenBudgetField"];
+	reasoningReplayField?: OpenAICompletionsCompat["reasoningReplayField"];
 };
 
 type ResolvedChatTemplateKwargValue = string | number | boolean | null;
@@ -507,11 +512,7 @@ export const stream: StreamFunction<"openai-completions", OpenAICompletionsOptio
 					if (foundReasoningField) {
 						const delta = deltaFields[foundReasoningField];
 						if (typeof delta === "string" && delta.length > 0) {
-							const thinkingSignature =
-								model.provider === "opencode-go" && foundReasoningField === "reasoning"
-									? "reasoning_content"
-									: foundReasoningField;
-							const block = ensureThinkingBlock(thinkingSignature);
+							const block = ensureThinkingBlock(compat.reasoningReplayField ?? foundReasoningField);
 							block.thinking += delta;
 							stream.push({
 								type: "thinking_delta",
@@ -1191,11 +1192,10 @@ export function convertMessages(
 						assistantMsg.content = assistantText;
 					}
 
-					// Use the signature from the first thinking block if available (for llama.cpp server + gpt-oss)
-					let signature = nonEmptyThinkingBlocks[0].thinkingSignature;
-					if (model.provider === "opencode-go" && signature === "reasoning") {
-						signature = "reasoning_content";
-					}
+					// Use the signature from the first thinking block if available (for llama.cpp server + gpt-oss).
+					// compat wins over it: an endpoint that reads a different field than it writes
+					// also has to be replayed correctly from a session recorded before this ran.
+					const signature = compat.reasoningReplayField ?? nonEmptyThinkingBlocks[0].thinkingSignature;
 					if (signature && signature.length > 0) {
 						(assistantMsg as any)[signature] = nonEmptyThinkingBlocks.map((block) => block.thinking).join("\n");
 					}
@@ -1552,6 +1552,8 @@ function detectCompat(model: Model<"openai-completions">): ResolvedOpenAIComplet
 		zaiToolStream: false,
 		supportsThinkingTokenBudget: false,
 		thinkingTokenBudgetField: undefined,
+		// opencode-go streams reasoning as `reasoning` but only reads `reasoning_content`.
+		reasoningReplayField: provider === "opencode-go" ? "reasoning_content" : undefined,
 		supportsStrictMode: !isMoonshot && !isTogether && !isCloudflareAiGateway && !isNvidia,
 		supportsOpenAIGrammarTools: false,
 		cacheControlFormat,
@@ -1598,6 +1600,7 @@ function getCompat(model: Model<"openai-completions">): ResolvedOpenAICompletion
 		zaiToolStream: model.compat.zaiToolStream ?? detected.zaiToolStream,
 		supportsThinkingTokenBudget: model.compat.supportsThinkingTokenBudget ?? detected.supportsThinkingTokenBudget,
 		thinkingTokenBudgetField: model.compat.thinkingTokenBudgetField ?? detected.thinkingTokenBudgetField,
+		reasoningReplayField: model.compat.reasoningReplayField ?? detected.reasoningReplayField,
 		supportsStrictMode: model.compat.supportsStrictMode ?? detected.supportsStrictMode,
 		supportsOpenAIGrammarTools: model.compat.supportsOpenAIGrammarTools ?? detected.supportsOpenAIGrammarTools,
 		cacheControlFormat: model.compat.cacheControlFormat ?? detected.cacheControlFormat,

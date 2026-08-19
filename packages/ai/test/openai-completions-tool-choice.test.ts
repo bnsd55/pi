@@ -1297,6 +1297,8 @@ describe("openai-completions tool_choice", () => {
 				chatTemplateKwargs: {},
 				chatTemplateArgs: {},
 				zaiToolStream: false,
+				// Detected from the provider by getCompat, which this call bypasses.
+				reasoningReplayField: "reasoning_content",
 				supportsStrictMode: true,
 				supportsOpenAIGrammarTools: false,
 				sendSessionAffinityHeaders: false,

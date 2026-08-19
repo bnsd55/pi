@@ -597,7 +597,11 @@ const OPENAI_COMPLETIONS_DEFAULT_COMPAT = {
 } satisfies Required<
 	Omit<
 		OpenAICompletionsCompat,
-		"cacheControlFormat" | "deferredToolsMode" | "supportsThinkingTokenBudget" | "thinkingTokenBudgetField"
+		| "cacheControlFormat"
+		| "deferredToolsMode"
+		| "supportsThinkingTokenBudget"
+		| "thinkingTokenBudgetField"
+		| "reasoningReplayField"
 	>
 > & {
 	cacheControlFormat?: OpenAICompletionsCompat["cacheControlFormat"];

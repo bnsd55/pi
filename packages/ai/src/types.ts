@@ -612,6 +612,14 @@ export interface OpenAICompletionsCompat {
 	thinkingTokenBudgetField?: ThinkingTokenBudgetField;
 	/** Alias for `thinkingTokenBudgetField: "thinking_token_budget"` (vLLM). Prefer `thinkingTokenBudgetField`. Default: false. */
 	supportsThinkingTokenBudget?: boolean;
+	/**
+	 * Field name used to replay reasoning on assistant messages. By default pi echoes
+	 * reasoning back under the field the response streamed it in, which is what most
+	 * endpoints accept. Set this when the endpoint reads a different field than it
+	 * writes: vLLM renamed its response field `reasoning_content` -> `reasoning` but
+	 * chat templates still read `reasoning_content`. Default: auto-detected from provider.
+	 */
+	reasoningReplayField?: string;
 	/** Whether the provider supports OpenAI custom tools with Lark/regex grammar formats. When false, grammar-constrained tools fall back to normal function tools. Default: false; the generated model catalog enables it for capable models. */
 	supportsOpenAIGrammarTools?: boolean;
 	/** Whether the provider supports the `strict` field in tool definitions. Default: true. */
